@@ -11,7 +11,7 @@ public:
     LASER,
     RADAR
   } sensor_type_;
-
+  
   Eigen::VectorXd raw_measurements_;
 };
 
