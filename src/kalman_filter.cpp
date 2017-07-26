@@ -42,14 +42,14 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /** TODO: * update the state by using Extended Kalman Filter equations */
-  float x  = ekf_.x_(0);
-  float y  = ekf_.x_(1);
-  float vx = ekf_.x_(2);
-  float vy = ekf_.x_(3);
+  float px  = x_(0);
+  float py  = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
 
-  float rho = sqrt(x * x + y * y);
-  float theta = atan2(y, x);
-  float ro_dot = (x * vx + y * vy)/rho;
+  float rho = sqrt(px * px + py * py);
+  float theta = atan2(py, px);
+  float ro_dot = (px * vx + py * vy)/rho;
   VectorXd z_pred = VectorXd(3);
   z_pred << rho,theta,ro_dot;
 

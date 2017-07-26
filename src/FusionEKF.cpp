@@ -33,23 +33,20 @@ FusionEKF::FusionEKF() {
    * Set the process and measurement noises */
 
   //measurement covariance matrix - H_laser
-  H_laser << 1.0, 0.0, 0.0, 0.0,
-             0.0, 1.0, 0.0, 0.0;
+  H_laser_ << 1.0, 0.0, 0.0, 0.0,
+              0.0, 1.0, 0.0, 0.0;
 
   //measurement covariance matrix - ekf_.F_
-  ekf_.F_ = 1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0;
+  ekf_.F_ << 1.0, 0.0, 0.0, 0.0,
+             0.0, 1.0, 0.0, 0.0,
+             0.0, 0.0, 1.0, 0.0;
 
   //measurement covariance matrix - ekf_.P_
-  ekf_.P_ = 1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1000 .0, 0.0,
-            0.0, 0.0, 0.0, 1000.0;
+  ekf_.P_ << 1.0, 0.0, 0.0, 0.0,
+             0.0, 1.0, 0.0, 0.0,
+             0.0, 0.0, 1000.0, 0.0,
+             0.0, 0.0, 0.0, 1000.0;
 
-  // set the acceleration noise components
-  noise_ax = 5;
-  noise_ay = 5;
 }
 /* Destructor. */
 FusionEKF::~FusionEKF() {}
@@ -68,16 +65,20 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
 
+    float ro = measurement_pack.raw_measurements_[0];
+    float theta = measurement_pack.raw_measurements_[1];
+    float x = ro * cos(theta);
+    float y = ro * sin(theta);
+
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /* Convert radar from polar to cartesian coordinates and initialize state. */
       
-      ekf_.x_(0) = ro*cos(theta);
-      ekf_.x_(1) = ro*sin(theta);
+      ekf_.x_(0) = x;
+      ekf_.x_(1) = y;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /* Initialize state. */
-      ekf_.x_(0) = x;
-      ekf_.x_(1) = y;
+      ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1],0,0;
     }
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -94,6 +95,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
+
+  // set the acceleration noise components
+  float noise_ax = 9.0;
+  float noise_ay = 9.0;
 
   //Modify the F matrix so that the time is integrated
   ekf_.F_(0, 2) = dt;
