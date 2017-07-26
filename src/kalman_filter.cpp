@@ -42,18 +42,32 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /** TODO: * update the state by using Extended Kalman Filter equations */
-  float px  = x_(0);
+  float px  = x_(0);  
+
+  if(px < 0.00001) {
+    px = 0.00001;
+  }
+  
   float py  = x_(1);
   float vx = x_(2);
   float vy = x_(3);
-
   float rho = sqrt(px * px + py * py);
   float theta = atan2(py, px);
-  float ro_dot = (px * vx + py * vy)/rho;
+  
+  float ro_dot;
+  
+  if(fabs(rho) < 0.0001) {
+    ro_dot = 0;
+  } else {
+    ro_dot = (px * vx + py * vy)/rho;
+  }
+
   VectorXd z_pred = VectorXd(3);
   z_pred << rho,theta,ro_dot;
 
   VectorXd y = z - z_pred;
+  
+  y(1) = std::atan2( sin(y(1)), cos(y(1)));
 
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
@@ -64,8 +78,4 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
-
-  x_ = F_ * x_;
-  MatrixXd Ft = F_.transpose();
-  P_ = F_ * P_ * Ft + Q_;
 }
