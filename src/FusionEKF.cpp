@@ -39,8 +39,8 @@ FusionEKF::FusionEKF() {
               0.0, 1.0, 0.0, 0.0;
 
   //measurement covariance matrix - ekf_.F_
-  ekf_.F_ << 1.0, 0.0, 0.0, 0.0,
-             0.0, 1.0, 0.0, 0.0,
+  ekf_.F_ << 1.0, 0.0, 1.0, 0.0,
+             0.0, 1.0, 0.0, 1.0,
              0.0, 0.0, 1.0, 0.0,
              0.0, 0.0, 0.0, 1.0;
 
@@ -98,9 +98,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0; //dt - expressed in seconds
   previous_timestamp_ = measurement_pack.timestamp_;
 
-  float dt_2 = dt * dt;
-  float dt_3 = dt_2 * dt;
-  float dt_4 = dt_3 * dt;
+  float const dt_2 = dt * dt;
+  float const dt_3 = dt_2 * dt;
+  float const dt_4 = dt_3 * dt;
 
   // set the acceleration noise components
   float noise_ax = 9.0;
